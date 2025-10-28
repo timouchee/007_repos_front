@@ -29,9 +29,9 @@ export const AppProvider = ({ children }: AppProviderProps) => {
 
     useEffect(() => {
         console.log("Connexion au serveur Socket.IO...");
-        socketRef.current = io("http://localhost:3001"); // local tous court
+        // socketRef.current = io("http://localhost:3001"); // local tous court
         // socketRef.current = io("http://10.5.1.92:3001") // local a la MIAGE
-        //socketRef.current = io(import.meta.env.VITE_API_URL); // PROD
+        socketRef.current = io(import.meta.env.VITE_API_URL); // PROD
         console.log("je suis : ", socketRef.current);
         //socketRef.current = socket;
 

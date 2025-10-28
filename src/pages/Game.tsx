@@ -294,44 +294,165 @@ function Game() {
         case "spectator":
             // dans une game mais pas encore dans une partie (genre si tu rejoin en cour de route)
             return (
-                <div className="h-screen w-screen flex flex-col items-center justify-center bg-yellow-100">
-                    {/* je suis le joueur socket.id */}
-                    {/* <p>Je suis le joueur : {liste_joueur[socket.id]?.name}</p>
-                    <p>dont l'id est {socket.id}</p> */}
-                    <div className="flex flex-col gap-4 w-full max-w-md text-center">
-                        {/* id game = fin de l'url */}
-                        <h1 className="text-3xl font-bold">Tu es dans la game ID: {gameId}</h1>
+
+
+                <div className="h-screen w-screen flex flex-row bg-blue-100">
+
+                    <div className="w-64 h-screen bg-blue-200 flex flex-col border-r border-blue-300 shadow-md">
+                        {/* Liste des joueurs scrollable */}
+                        <div className="flex-1 overflow-y-auto p-4">
+                            <h2 className="text-xl font-bold mb-2 text-center text-blue-700">Joueurs</h2>
+                            {Object.keys(liste_joueur).map((key) => {
+                                const joueur = liste_joueur[key];
+                                const isSelf = key === socket.id;
+                                let color = "text-gray-700";
+                                let add_str = "";
+
+                                switch (joueur.state) {
+                                    case "player":
+                                        color = "text-green-600";
+                                        add_str = "🎮";
+                                        break;
+                                    case "spectator":
+                                        color = "text-yellow-600";
+                                        add_str = "👀";
+                                        break;
+                                    case "dead":
+                                        color = "text-red-600";
+                                        add_str = "💀";
+                                        break;
+                                    case "winner":
+                                        color = "text-blue-800 font-semibold";
+                                        add_str = "🎉🎉🏆";
+                                        break;
+
+                                    default:
+                                        color = "text-blue-800 font-semibold";
+                                        add_str = "⚠️⚠️⚠️";
+                                        break;
+                                }
+
+
+                                return (
+                                    <div
+                                        key={key}
+                                        className={`p-2 my-1 rounded-lg shadow-sm ${isSelf ? "bg-blue-300" : "bg-white"}`}
+                                    >
+                                        <p className={`font-medium ${color}`}>
+                                            {joueur.name} {isSelf && <span className="text-sm text-blue-700">(vous)</span>} {add_str}
+                                        </p>
+                                        <p className="text-xs text-gray-500 italic">État : {joueur.state}</p>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* Bloc Votre état */}
+                        <div className="p-4 bg-white shadow-inner rounded-t-lg border-t border-gray-300">
+                            <h3 className="text-lg font-semibold text-center text-blue-700 mb-2">Votre état</h3>
+                            <p className="text-center">Recharge : {liste_joueur[socket.id]?.recharge}</p>
+                        </div>
+
+                        {/* Bouton quitter */}
+                        <div className="p-4">
+                            <button
+                                className="w-full p-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                                onClick={() => quit_the_game()}
+                            >
+                                Quitter la game
+                            </button>
+                        </div>
                     </div>
 
-                    <div>
-                        <h2 className="text-2xl font-bold">Liste des joueurs :</h2>
 
-                        {Object.keys(liste_joueur).map((key) => (
-                            < div key={key} className="flex items-center justify-center " >
-                                <div key={key} className={`border p-2 my-2 rounded ${key == socket.id ? "bg-gray-400" : "bg-white"} shadow`}>
-                                    <p className="font-semibold">Pseudo: {liste_joueur[key].name}</p>
-                                </div>
-                                {liste_joueur[key].state === "dead" && <span>💀</span>}
-                                {liste_joueur[key].state === "player" && <span>🎮</span>}
-                                {liste_joueur[key].state === "spectator" && <span>👀</span>}
-                                {liste_joueur[key].state === "winner" && <span>🏆</span>}
+                    {/* ✅ Zone principale */}
+                    <div className="flex-1 flex flex-col items-center justify-center">
+                        {/* <p>Je suis le joueur : {liste_joueur[socket.id]?.name}</p>
+                        <p>dont l'id est {socket.id}</p> */}
+
+                        <div className="flex flex-col gap-4 w-full max-w-md text-center">
+                            <h2 className="text-2xl font-bold">Vous êtes spectateur de la game</h2>
+                            <h2 className="text-3xl font-bold">dans la game ID: {gameId}</h2>
+                            {/* compteur avant le debut de la prochiane game SI timeBeforeNextParty < 11 */}
+                            {timeBeforeNextParty < 11 && (
+                                <p className="text-lg text-green-700 font-semibold">
+                                    Nouvelle partie dans : {timeBeforeNextParty} secondes
+                                </p>
+                            )}
+
+                        </div>
+
+                    </div>
+
+                    {/* ✅ Panneau de chat à droite */}
+                    <div className="w-80 bg-blue-200 p-4 border-l border-blue-300 flex flex-col justify-between">
+
+                        {/* Chat global */}
+                        <div className="flex flex-col h-1/2 mb-4 bg-white rounded-lg shadow-inner p-2">
+                            <h2 className="text-lg font-semibold text-center text-blue-700 mb-2">💬 Chat Global</h2>
+
+                            {/* zone des messages */}
+                            <div className="flex-1 overflow-y-auto bg-gray-50 rounded p-2 space-y-1">
+                                {messages.map((msg, i) => (
+                                    <div key={i} className="text-sm">
+                                        <span className="font-semibold">{msg.author} :</span>{" "}
+                                        <span>{msg.text}</span>
+                                        <span className="text-gray-400 text-xs ml-1">{msg.time}</span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="flex mt-2">
+                                <input
+                                    type="inputMessage"
+                                    placeholder="Écrire un message..."
+                                    className="flex-1 p-2 rounded-l border border-blue-400 focus:outline-none"
+                                    value={newMessage}
+                                    onChange={(e) => setNewMessage(e.target.value)}
+                                />
+                                <button className="bg-blue-500 text-white px-3 rounded-r hover:bg-blue-600" onClick={sendMessage}>
+                                    Envoyer
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Chat feedback */}
+                        <div className="flex flex-col h-1/2 bg-white rounded-lg shadow-inner p-2">
+                            <h2 className="text-lg font-semibold text-center text-blue-700 mb-2">Dernier tour</h2>
+
+                            <div className="flex-1 overflow-y-auto space-y-1">
+                                {feddbackLastRoundRaw.map((fb, index) => {
+                                    // récupérer le nom du joueur qui a fait l'action
+                                    const joueurNom = fb.id_joueur === socket.id
+                                        ? "toi"
+                                        : liste_joueur[fb.id_joueur]?.name || fb.id_joueur;
+
+                                    // formater les targets
+                                    const targetsFormatees = fb.target?.map(targetId => {
+                                        const targetNom = liste_joueur[targetId]?.name || targetId;
+                                        const targetIdSuffix = targetId.slice(-2); // les 2 derniers caractères
+                                        return `${targetNom}(${targetIdSuffix})`;
+                                    }).join(", ");
+
+                                    return (
+                                        <p key={index}>
+                                            <b>{joueurNom}:</b>{" "}
+                                            {targetsFormatees
+                                                ? `A attaqué ${targetsFormatees} avec ${fb.action}`
+                                                : `A joué ${fb.action}`}
+                                        </p>
+                                    );
+                                })}
 
                             </div>
-                        ))}
+
+                        </div>
+
                     </div>
-
-                    {/* compteur avant le debut de la prochiane game SI timeBeforeNextParty < 11 */}
-                    {timeBeforeNextParty < 11 && (
-                        <p className="text-lg text-green-700 font-semibold">
-                            Nouvelle partie dans : {timeBeforeNextParty} secondes
-                        </p>
-                    )}
-
-                    {/*  quitter la game , navigate dans Home */}
-                    <button className="mt-4 p-2 bg-red-500 text-white rounded" onClick={() => quit_the_game()}>
-                        Quitter la game
-                    </button>
                 </div>
+
+
+
             );
             break;
         case "player":
@@ -501,3 +622,6 @@ function Game() {
     return "";
 }
 export default Game;
+
+
+
