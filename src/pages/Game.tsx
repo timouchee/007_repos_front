@@ -325,6 +325,10 @@ function Game() {
                                         color = "text-blue-800 font-semibold";
                                         add_str = "🎉🎉🏆";
                                         break;
+                                    case "quit":
+                                        color = "text-gray-800";
+                                        add_str = "🚪";
+                                        break;
 
                                     default:
                                         color = "text-blue-800 font-semibold";
