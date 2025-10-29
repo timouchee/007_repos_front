@@ -106,6 +106,7 @@ function Game() {
             setInfo_party(info_party_for_client);
             setListeJoueur(liste_joueur_for_client);
             setTimeBeforeNextParty(11);
+            setIsValidAction(false);
         });
 
         socket.on("action_not_valid", () => {
@@ -121,6 +122,7 @@ function Game() {
         socket.on("you_win", () => {
             console.log("Tu as gagné la partie");
             setTimeBeforeNextParty(11);
+            setIsValidAction(false);
         });
 
         socket.on("resolutionDuTour", (effect: any[]) => {
