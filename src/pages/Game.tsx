@@ -30,9 +30,18 @@ function Game() {
     //  "joueur 4": { "action": "double_pistolet", "target": ["joueur 3", "joueur 1"], "priority": 1 },
     type unFeedBack = { action: string, target?: string[], id_joueur: string, name_joueur?: string };
 
+    // Informations sur la partie   
+    type InfoParty = { id_party: string, max_joueur: number, min_joueur: number, etat_party: string, tour_party: number, nb_joueur: number }
+
     const [liste_joueur, setListeJoueur] = useState<ListeJoueur>({});
-    const [info_party, setInfo_party] = useState<ListeJoueur>({});
-    const [actionPossible, setActionPossible] = useState<DicoActionPossible>({});
+    const [info_party, setInfo_party] = useState<InfoParty>({
+        id_party: "",
+        max_joueur: 0,
+        min_joueur: 0,
+        etat_party: "",
+        tour_party: 0,
+        nb_joueur: 0
+    }); const [actionPossible, setActionPossible] = useState<DicoActionPossible>({});
     const [dico_action, setDico_action] = useState<DicoAction>({});
     const [lstTargetSelect, setLstTargetSelect] = useState<string[]>([]);
     const [actionWithTargetSelect, setActionWithTargetSelect] = useState("");
@@ -43,7 +52,9 @@ function Game() {
     const [messages, setMessages] = useState<unMessage[]>([]);
     const [feedBackLastRound, setFeedBackLastRound] = useState<unMessage[]>([]);
     const [newMessage, setNewMessage] = useState("");
-    const [feddbackLastRoundRaw, setFeedBackLastRoundRaw] = useState<unFeedBack[]>([]);
+    const [feedBackLastRoundRaw, setFeedBackLastRoundRaw] = useState<unFeedBack[]>([]);
+    const [listPlayerIdWhoChoose, setListPlayerIdWhoChoose] = useState<string[]>([]);
+    const [nbTour, setNbTour] = useState(0);
 
 
     useEffect(() => {
@@ -60,6 +71,11 @@ function Game() {
 
         socket.on("load_history", (oldMessages: any) => {
             setMessages(oldMessages);
+        });
+
+        socket.on("players_list_who_choose", (newListe: any) => {
+            console.log("listPlayerIdWhoChoose===========", listPlayerIdWhoChoose);
+            setListPlayerIdWhoChoose(newListe);
         });
 
         socket.on("last_round_feedback", (feedback: unFeedBack[]) => {
@@ -228,13 +244,13 @@ function Game() {
             );
         } else if (actionPossible[key].nb_cible[0] > 0) { // il faut choisir au moin 1 cible
             return (
-                <>
-                    <button key={key} disabled={isValidAction} onClick={() => { setActionWithTargetSelect(key) }} className={`p-2 rounded border border-2 ${isValidAction ? "bg-gray-300 text-gray-500" : actionWithTargetSelect == key ? "bg-blue-500 text-black hover:border-blue-600" : " bg-white text-black hover:border-blue-600 "} border-black`}>
+                <span key={key} className=" rounded border border-2">
+                    <button key={key} disabled={isValidAction} onClick={() => { setActionWithTargetSelect(key) }} className={`w-full p-2 rounded border border-2 ${isValidAction ? "bg-gray-300 text-gray-500" : actionWithTargetSelect == key ? "bg-blue-500 text-black hover:border-blue-600" : " bg-white text-black hover:border-blue-600 "} border-black`}>
                         {key} - Coût: {actionPossible[key].cout}
                     </button>
                     {/* on doit pouvoir selectionner autant de cible que il y a de actionPossible[key].nb_cibl  */}
                     {actionWithTargetSelect == key && (
-                        <>
+                        <span key={key + "1"}>
                             <h3 className="text-xl font-bold">Sélectionnez vos cibles :</h3>
                             <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto mb-2">
                                 {Object.keys(liste_joueur).filter((key) => key !== socket.id && liste_joueur[key].state == "player").map((key) => (
@@ -250,14 +266,9 @@ function Game() {
 
                                 ))}
                             </div>
-                        </>
+                        </span>
                     )}
-                    {console.log("addOrRemoveTarget", lstTargetSelect)}
-                    {console.log(" cible demandé", actionPossible[key].nb_cible)}
-                    {console.log("actionWithTargetSelect", actionWithTargetSelect)}
-                    {console.log("key", key)}
-                    {console.log(" explicitation des valeurs : ", lstTargetSelect.length, " === ", actionPossible[key].nb_cible, " && ", actionWithTargetSelect, " == ", key)}
-                    {console.log(" condition ? : ", actionPossible[key].nb_cible.includes(lstTargetSelect.length))}
+
                     {actionPossible[key].nb_cible.includes(lstTargetSelect.length) && actionWithTargetSelect === key && (
                         // a afficher que si l'action associer a se bouton ai ete cibler :/
                         // un bouton pour valider l'action avec les cible selectionné
@@ -265,7 +276,7 @@ function Game() {
                             Valider l'action avec les cibles sélectionnées
                         </button>
                     )}
-                </>
+                </span>
             );
         }
         else {
@@ -309,6 +320,8 @@ function Game() {
                                 const isSelf = key === socket.id;
                                 let color = "text-gray-700";
                                 let add_str = "";
+                                let hasPlay = listPlayerIdWhoChoose.includes(key);
+                                console.log("hasPlay", hasPlay, "listPlayerIdWhoChoose", listPlayerIdWhoChoose, "key", key);
 
                                 switch (joueur.state) {
                                     case "player":
@@ -342,10 +355,10 @@ function Game() {
                                 return (
                                     <div
                                         key={key}
-                                        className={`p-2 my-1 rounded-lg shadow-sm ${isSelf ? "bg-blue-300" : "bg-white"}`}
+                                        className={`p-2 my-1 rounded-lg shadow-sm ${hasPlay ? "bg-green-300" : "bg-white"}`}
                                     >
                                         <p className={`font-medium ${color}`}>
-                                            {joueur.name} {isSelf && <span className="text-sm text-blue-700">(vous)</span>} {add_str}
+                                            {joueur.name} {isSelf && <span className=" ng-blue-300 text-sm text-blue-700">(vous)</span>} {add_str}
                                         </p>
                                         <p className="text-xs text-gray-500 italic">État : {joueur.state}</p>
                                     </div>
@@ -424,10 +437,10 @@ function Game() {
 
                         {/* Chat feedback */}
                         <div className="flex flex-col h-1/2 bg-white rounded-lg shadow-inner p-2">
-                            <h2 className="text-lg font-semibold text-center text-blue-700 mb-2">Dernier tour</h2>
+                            <h2 className="text-lg font-semibold text-center text-blue-700 mb-2">Dernier tour (n° {info_party.tour_party})</h2>
 
                             <div className="flex-1 overflow-y-auto space-y-1">
-                                {feddbackLastRoundRaw.map((fb, index) => {
+                                {feedBackLastRoundRaw.map((fb, index) => {
                                     // récupérer le nom du joueur qui a fait l'action
                                     const joueurNom = fb.id_joueur === socket.id
                                         ? "toi"
@@ -480,19 +493,46 @@ function Game() {
                                 const joueur = liste_joueur[key];
                                 const isSelf = key === socket.id;
                                 let color = "text-gray-700";
+                                let add_str = "";
+                                let hasPlay = listPlayerIdWhoChoose.includes(key);
+                                console.log("hasPlay", hasPlay, "listPlayerIdWhoChoose", listPlayerIdWhoChoose, "key", key);
 
-                                if (joueur.state === "player") color = "text-green-600";
-                                else if (joueur.state === "spectator") color = "text-yellow-600";
-                                else if (joueur.state === "dead") color = "text-red-600";
-                                else if (joueur.state === "winner") color = "text-blue-800 font-semibold";
+                                switch (joueur.state) {
+                                    case "player":
+                                        color = "text-green-600";
+                                        add_str = "🎮";
+                                        break;
+                                    case "spectator":
+                                        color = "text-yellow-600";
+                                        add_str = "👀";
+                                        break;
+                                    case "dead":
+                                        color = "text-red-600";
+                                        add_str = "💀";
+                                        break;
+                                    case "winner":
+                                        color = "text-blue-800 font-semibold";
+                                        add_str = "🎉🎉🏆";
+                                        break;
+                                    case "quit":
+                                        color = "text-gray-800";
+                                        add_str = "🚪";
+                                        break;
+
+                                    default:
+                                        color = "text-blue-800 font-semibold";
+                                        add_str = "⚠️⚠️⚠️";
+                                        break;
+                                }
+
 
                                 return (
                                     <div
                                         key={key}
-                                        className={`p-2 my-1 rounded-lg shadow-sm ${isSelf ? "bg-blue-300" : "bg-white"}`}
+                                        className={`p-2 my-1 rounded-lg shadow-sm ${hasPlay ? "bg-green-300" : "bg-white"}`}
                                     >
                                         <p className={`font-medium ${color}`}>
-                                            {joueur.name} {isSelf && <span className="text-sm text-blue-700">(vous)</span>}
+                                            {joueur.name} {isSelf && <span className=" ng-blue-300 text-sm text-blue-700">(vous)</span>} {add_str}
                                         </p>
                                         <p className="text-xs text-gray-500 italic">État : {joueur.state}</p>
                                     </div>
@@ -573,10 +613,10 @@ function Game() {
 
                         {/* Chat feedback */}
                         <div className="flex flex-col h-1/2 bg-white rounded-lg shadow-inner p-2">
-                            <h2 className="text-lg font-semibold text-center text-blue-700 mb-2">Dernier tour</h2>
+                            <h2 className="text-lg font-semibold text-center text-blue-700 mb-2">Dernier tour (n° {info_party.tour_party})</h2>
 
                             <div className="flex-1 overflow-y-auto space-y-1">
-                                {feddbackLastRoundRaw.map((fb, index) => {
+                                {feedBackLastRoundRaw.map((fb, index) => {
                                     // récupérer le nom du joueur qui a fait l'action
                                     const joueurNom = fb.id_joueur === socket.id
                                         ? "toi"
