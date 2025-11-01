@@ -390,7 +390,7 @@ function Game() {
                         <p>dont l'id est {socket.id}</p> */}
 
                         <div className="flex flex-col gap-4 w-full max-w-md text-center">
-                            <h2 className="text-2xl font-bold">Vous êtes spectateur de la game</h2>
+                            <h2 className="text-2xl font-bold">Vous êtes {whichPartInTurn} de la game</h2>
                             <h2 className="text-3xl font-bold">dans la game ID: {gameId}</h2>
                             {/* compteur avant le debut de la prochiane game SI timeBeforeNextParty < 11 */}
                             {timeBeforeNextParty < 11 && (
