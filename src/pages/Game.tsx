@@ -130,6 +130,11 @@ function Game() {
             setIsValidAction(false);
         });
 
+        socket.on("tour_annuler", () => {
+            console.log("Le tour a été annulé");
+            setIsValidAction(false);
+        });
+
         socket.on("action_valid", () => {
             console.log("L'action est valide");
             setIsValidAction(true);
