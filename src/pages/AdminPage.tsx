@@ -70,14 +70,20 @@ function AdminPage() {
         // Première récupération immédiate
         getAllData();
 
+        socket.on("game_state", (data: any) => {
+            let { info_party_for_client, liste_joueur_for_client } = data;
+            setInfoParty(info_party_for_client);
+            setListeJoueur(liste_joueur_for_client);
+        });
+
         // Écoute la réponse du serveur
         socket.on("admin_send_all", (data: any) => {
             setInfoParty(data.info_party_for_admin);
-            console.log("dico action : ",data.info_party_for_admin)
+            console.log("dico action : ", data.info_party_for_admin)
             setListeJoueur(data.liste_joueur_for_admin);
-            console.log("liste joueur : ",data.liste_joueur_for_admin)
+            console.log("liste joueur : ", data.liste_joueur_for_admin)
             setDicoActionJoueur(data.dico_action_joueur_admin);
-            console.log("action joueur : ",data.dico_action_joueur_admin)
+            console.log("action joueur : ", data.dico_action_joueur_admin)
         });
 
         // Intervalle pour récupérer toutes les 5 secondes
@@ -92,6 +98,9 @@ function AdminPage() {
 
     }, []);// pour le moment coté serveur il n'y a que 1 game qui existe ok
 
+    function addOneRecharge() {
+        socket.emit("admin_add_recharge");
+    }
 
     return (
         <div className="min-h-screen w-screen p-6 bg-gray-100 flex flex-col items-center gap-6">
@@ -125,6 +134,22 @@ function AdminPage() {
                             <th className="border border-gray-300 p-2">Cooldown Miroire</th>
                             <th className="border border-gray-300 p-2">Recharge</th>
                             <th className="border border-gray-300 p-2">Effets</th>
+                        </tr>
+                        <tr>
+                            <th className="border border-gray-300 p-2"></th>
+                            <th className="border border-gray-300 p-2"></th>
+                            <th className="border border-gray-300 p-2"></th>
+                            <th className="border border-gray-300 p-2"></th>
+                            <th className="border border-gray-300 p-2"></th>
+                            <th className="border border-gray-300 p-2">
+                                <button
+                                    type="button"
+                                    className="p-3 text-xl cursor-pointer bg-blue-500 text-white rounded hover:bg-blue-600"
+                                    onClick={() => addOneRecharge()}>
+                                    ajouter 1
+                                </button>
+                            </th>
+                            <th className="border border-gray-300 p-2"></th>
                         </tr>
                     </thead>
                     <tbody>

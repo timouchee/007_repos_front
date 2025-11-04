@@ -15,11 +15,19 @@ function Home() {
     const [idGame, setIdGame] = useState("");
     const Navigate = useNavigate();
     const { getSocket } = useApp();
-    let socket = getSocket();
+    // let socket = getSocket();
+    const [socket, setSocket] = useState<ReturnType<typeof getSocket> | null>(null);
+    const [isConnected, setIsConnected] = useState(false);
+
+
+    console.log("le socket : ", socket);
+
+    // mettre un intervalle qui fait des getsocket toutes les secondes pour voir si on est connecté (faudra faire des stat avec socket je ferai sa apres)
+
+
 
     function findGame() {
         // pour le moment pas d'apelle BD on va faire en static
-        console.log(socket);
         // pour émettre
         socket.emit("join_party", pseudo);
         socket.on("party_joined", (gameId: string) => {
@@ -33,9 +41,26 @@ function Home() {
         document.getElementById("inputName")?.focus();
     }
 
+
     useEffect(() => {
         focusOnNameInput();
+
     }, []);
+
+    useEffect(() => {
+        let s = getSocket();
+        setSocket(s);
+        setIsConnected(s?.connected ?? false);
+
+        // 🔁 Vérifie toutes les 3 secondes si le socket est désormais dispo/connecté
+        const interval = setInterval(() => {
+            const current = getSocket();
+            if (current !== socket) setSocket(current);
+            setIsConnected(current?.connected ?? false);
+        }, 3000);
+
+        return () => clearInterval(interval);
+    }, [getSocket]);
 
     useEffect(() => {
         if (idGame) {
@@ -46,7 +71,11 @@ function Home() {
     return (
         <div className="h-screen w-screen flex items-center justify-center bg-green-100">
             <div className="flex flex-col gap-4 w-full max-w-md text-center">
-                <h1 className="text-3xl font-bold">Bienvenue sur le jeu de 007</h1>
+                <h1 className="text-3xl font-bold">
+                    Bienvenue sur le jeu de 007{" "}
+                    {isConnected ? <span>🟢</span> : <span>🔴</span>}
+                </h1>
+
                 <form className="flex flex-col items-center gap-4" onSubmit={(e) => { e.preventDefault(); findGame(); }}>
                     <input
                         id="inputName"

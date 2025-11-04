@@ -107,7 +107,10 @@ function Game() {
             if (info_party_for_client.etat_party === "ended") {
                 // INTERDICTION FORMEL DE FAIRE DES ALERT sa fige le code de tt les joueur 
                 console.log("La partie est terminé");
-
+            }
+            // si j'ai pas mon id dans la liste des joueur je retourne a l'accueil
+            if (!liste_joueur_for_client[socket.id]) {
+                Navigate("/");
             }
         });
 
@@ -191,16 +194,23 @@ function Game() {
         Navigate("/");
     }
 
-    function sendMyAction(actionName: string) {
+    function setActionWithOutTarget(actionName: string) {
+        setLstTargetSelect([]);
+        setActionWithTargetSelect("")
+        console.log("normalement tu a clear la liste des cible");
+        sendMyAction(actionName, []);
+    }
+
+    function sendMyAction(actionName: string, target: string[]) {
         console.log("Tu as choisi l'action :", actionName);
-        console.log("voici la liste des cible :", lstTargetSelect);
-        if (lstTargetSelect.length > 1) {
-            socket.emit("thisIsMyAction", { action: actionName, target: lstTargetSelect });// trouver un systeme car la cible et tous la triche etc...
+        console.log("voici la liste des cible :", target);
+        if (target.length > 1) {
+            socket.emit("thisIsMyAction", { action: actionName, target: target });// trouver un systeme car la cible et tous la triche etc...
         }
-        else if (lstTargetSelect.length === 1) {
-            socket.emit("thisIsMyAction", { action: actionName, target: [lstTargetSelect[0]] });// trouver un systeme car la cible et tous la triche etc...
+        else if (target.length === 1) {
+            socket.emit("thisIsMyAction", { action: actionName, target: [target[0]] });// trouver un systeme car la cible et tous la triche etc...
         }
-        else if (lstTargetSelect.length === 0) {
+        else if (target.length === 0) {
             socket.emit("thisIsMyAction", { action: actionName });// trouver un systeme car la cible et tous la triche etc...
         }
         setLstTargetSelect([]);
@@ -210,7 +220,7 @@ function Game() {
     function verifySendAction(actionName: string) {
         // verifier que le nombre de cible est supérieur a 0 ou egal au nombre de cible demandé par l'action
         if (actionPossible[actionName].nb_cible.includes(lstTargetSelect.length)) {
-            sendMyAction(actionName);
+            sendMyAction(actionName, lstTargetSelect);
         } else {
             console.log("Tu dois sélectionner le bon nombre de cibles pour cette action");
         }
@@ -243,7 +253,7 @@ function Game() {
         if (actionPossible[key].nb_cible[0] === 0) {// pas de cible a choisir
             return (
                 // afficher le truc en griser si isValidAction est a true
-                <button key={key} disabled={isValidAction} onClick={() => { sendMyAction(key) }} className={`p-2 rounded border border-2 ${isValidAction ? "bg-gray-300 text-gray-500" : " bg-white text-black hover:border-blue-600 "} border-black`}>
+                <button key={key} disabled={isValidAction} onClick={() => { setActionWithOutTarget(key); }} className={`p-2 rounded border border-2 ${isValidAction ? "bg-gray-300 text-gray-500" : " bg-white text-black hover:border-blue-600 "} border-black`}>
                     {key} - Coût: {actionPossible[key].cout}
                 </button>
             );
@@ -290,6 +300,10 @@ function Game() {
 
 
 
+    }
+
+    if (!liste_joueur[socket.id]) {
+        Navigate("/");
     }
 
     // si le socket marche pas encore ou met rien sur la page 
@@ -500,7 +514,6 @@ function Game() {
                                 let color = "text-gray-700";
                                 let add_str = "";
                                 let hasPlay = listPlayerIdWhoChoose.includes(key);
-                                console.log("hasPlay", hasPlay, "listPlayerIdWhoChoose", listPlayerIdWhoChoose, "key", key);
 
                                 switch (joueur.state) {
                                     case "player":
