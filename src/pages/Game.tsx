@@ -110,6 +110,7 @@ function Game() {
             }
             // si j'ai pas mon id dans la liste des joueur je retourne a l'accueil
             if (!liste_joueur_for_client[socket.id]) {
+                socket.emit("disconnecting");
                 Navigate("/");
             }
         });
@@ -302,9 +303,7 @@ function Game() {
 
     }
 
-    if (!liste_joueur[socket.id]) {
-        Navigate("/");
-    }
+    
 
     // si le socket marche pas encore ou met rien sur la page 
     if (!socket || !socket.id || !gameId) {
