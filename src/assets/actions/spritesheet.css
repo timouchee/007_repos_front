@@ -1,0 +1,53 @@
+/* ==================== TAILLE 1 (32×31) ==================== */
+
+.action_taille_1 {
+  display: inline-block;
+  background: url('spritesheet.png') no-repeat;
+  background-size: 160px 93px;
+  width: 32px;
+  height: 31px;
+}
+
+.recharge_taille_1        { background-position: 0px 0px; }
+.cure_taille_1            { background-position: -32px 0px; }
+.holy_recharge_taille_1   { background-position: -64px 0px; }
+.ressurect_taille_1       { background-position: -96px 0px; }
+.rancune_taille_1         { background-position: -128px 0px; }
+.double_pistolet_taille_1 { background-position: 0px -31px; }
+.lame_taille_1            { background-position: -32px -31px; }
+.bouclier_taille_1        { background-position: -64px -31px; }
+.pisto_poison_taille_1    { background-position: -96px -31px; }
+.arrache_taille_1         { background-position: -128px -31px; }
+.miroire_taille_1         { background-position: 0px -62px; }
+.pistolet_taille_1        { background-position: -32px -62px; }
+.dague_taille_1           { background-position: -64px -62px; }
+.bazooka_taille_1         { background-position: -96px -62px; }
+.pisto_lame_taille_1      { background-position: -128px -62px; }
+
+
+/* ==================== TAILLE 2 (64×62) ==================== */
+
+.action {
+  display: inline-block;
+  background: url('spritesheet.png') no-repeat;
+  background-size: 320px 186px;
+  width: 64px;
+  height: 62px;
+  image-rendering: pixelated;
+}
+
+.recharge        { background-position: 0px 0px; }
+.cure            { background-position: -64px 0px; }
+.holy_recharge   { background-position: -128px 0px; }
+.ressurect       { background-position: -192px 0px; }
+.rancune         { background-position: -256px 0px; }
+.double_pistolet { background-position: 0px -62px; }
+.lame            { background-position: -64px -62px; }
+.bouclier        { background-position: -128px -62px; }
+.pisto_poison    { background-position: -192px -62px; }
+.arrache         { background-position: -256px -62px; }
+.miroire         { background-position: 0px -124px; }
+.pistolet        { background-position: -64px -124px; }
+.dague           { background-position: -128px -124px; }
+.bazooka         { background-position: -192px -124px; }
+.pisto_lame      { background-position: -256px -124px; }

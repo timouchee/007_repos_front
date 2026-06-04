@@ -69,43 +69,45 @@ function Home() {
     }, [idGame]);
 
     return (
-        <div className="h-screen w-screen flex items-center justify-center bg-green-100">
-            <div className="flex flex-col gap-4 w-full max-w-md text-center">
-                <h1 className="text-3xl font-bold">
-                    Bienvenue sur le jeu de 007{" "}
-                    {isConnected ? <span>🟢</span> : <span>🔴</span>}
-                </h1>
+        <label htmlFor="inputName">
+            <div className="h-screen w-screen flex items-center justify-center bg-green-100">
+                <div className="flex flex-col gap-4 w-full max-w-md text-center">
+                    <h1 className="text-3xl font-bold">
+                        Bienvenue sur le jeu de 007{" "}
+                        {isConnected ? <span>🟢</span> : <span>🔴</span>}
+                    </h1>
 
-                <form className="flex flex-col items-center gap-4" onSubmit={(e) => { e.preventDefault(); findGame(); }}>
-                    <input
-                        id="inputName"
-                        type="text"
-                        placeholder="Entrez votre pseudo"
-                        className="p-2 text-lg border rounded mb-4"
-                        value={pseudo}
-                        onChange={(e) => setPseudo(e.target.value)}
-                    />
-                    <button className="p-4 text-2xl cursor-pointer bg-blue-500 text-white rounded hover:bg-blue-600" type="submit">
-                        Trouver une partie
-                    </button>
-                </form>
+                    <form className="flex flex-col items-center gap-4" onSubmit={(e) => { e.preventDefault(); findGame(); }}>
+                        <input
+                            id="inputName"
+                            type="text"
+                            placeholder="Entrez votre pseudo"
+                            className="p-2 text-lg border rounded mb-4"
+                            value={pseudo}
+                            onChange={(e) => setPseudo(e.target.value)}
+                        />
+                        <button className="p-4 text-2xl cursor-pointer bg-blue-500 text-white rounded hover:bg-blue-600" type="submit">
+                            Trouver une partie
+                        </button>
+                    </form>
 
-                <p className="text-sm text-gray-600">
-                    Votre pseudo: {pseudo}
-                </p>
-                {idGame && (
-                    <p className="text-lg text-green-700 font-semibold">
-                        Partie trouvée ! ID de la partie: {idGame}
+                    <p className="text-sm text-gray-600">
+                        Votre pseudo: {pseudo}
                     </p>
-                )}
-                <div>
-                    <button type="button" className="p-2 text-xl cursor-pointer bg-blue-500 text-white rounded hover:bg-blue-600" onClick={() => Navigate("/rules")}>Voir les règles</button>
-                </div>
-                <div>
-                    <button type="button" className="p-2 text-xl cursor-pointer bg-gray-500 text-white rounded hover:bg-gray-900" onClick={() => Navigate("/adminPage")}>page admin</button>
+                    {idGame && (
+                        <p className="text-lg text-green-700 font-semibold">
+                            Partie trouvée ! ID de la partie: {idGame}
+                        </p>
+                    )}
+                    <div>
+                        <button type="button" className="p-2 text-xl cursor-pointer bg-blue-500 text-white rounded hover:bg-blue-600" onClick={() => Navigate("/rules")}>Voir les règles</button>
+                    </div>
+                    <div>
+                        <button type="button" className="p-2 text-xl cursor-pointer bg-gray-500 text-white rounded hover:bg-gray-900" onClick={() => Navigate("/adminPage")}>page admin</button>
+                    </div>
                 </div>
             </div>
-        </div>
+        </label>
 
     );
 

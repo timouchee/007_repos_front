@@ -5,6 +5,9 @@ import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { use, useEffect, useState } from "react";
 import { useApp } from "../context/AppContext";
+import '../assets/spritesheet/personnage/spritesheet.css'
+import '../assets/personnage/spritesheet.css'
+import '../assets/actions/spritesheet.css'
 
 
 function Game() {
@@ -12,19 +15,26 @@ function Game() {
     const Navigate = useNavigate();
     const { getSocket } = useApp();
     let socket = getSocket();
+
+
+    type Effet = (string | number)[];
+
     type Joueur = {
         name: string;
         cooldown_miroire: number;
         state: string;
         recharge: number;
+        effect: Effet[];
+        sprite_joueur: number;
     };
 
     type ListeJoueur = { [key: string]: Joueur };
     // exempel action "recharge": { "type": 1, "cout": 0, "priority": 1, "nb_cible": 0 },
-    type Action = { type: number, cout: number, priority: number, nb_cible: [number] };
+    type Action = { type: number, cout: number, priority: number, nb_cible: [number], can_target_dead?: boolean , can_target_self?: boolean};
     type DicoActionPossible = { [key: string]: Action };
-    //     "bouclier": { "type": 3, "cout": 0, "beaten": ["bazooka", "pisto_lame_2"], "priority": 1, "nb_cible": 0 },
-    type DicoAction = { [key: string]: { type: number, cout: number, beaten: string[], negate: string[], priority: number, nb_cible: number } };
+    //  {  oRwWoGhy16ar1Wi8AAAC: { action: 'recharge', priority: 1, check: true },  'uAiQHbQ9HVQ-llLnAAAF': { action: 'recharge', priority: 1, check: true }},
+    type DicoAction = { [key: string]: { action: string, priority: number, check: boolean, target?: string[] } };
+
     // unMessgae = const message = {author: msg.author || "Anonyme",text: msg.text || "",time: new Date().toLocaleTimeString(),};
     type unMessage = { author: string, text: string, time: string };
     //  "joueur 4": { "action": "double_pistolet", "target": ["joueur 3", "joueur 1"], "priority": 1 },
@@ -65,8 +75,12 @@ function Game() {
         }
 
         socket.on("action_possible", (data: any) => {
-            console.log("Tes actions possible sont :", data);
+            // console.log("Tes actions possible sont :", data);
             setActionPossible(data);
+            if (Object.keys(data).length === 0) {
+                socket.emit("thisIsMyAction", {});
+                setIsValidAction(true);
+            }
         });
 
         socket.on("load_history", (oldMessages: any) => {
@@ -74,18 +88,18 @@ function Game() {
         });
 
         socket.on("players_list_who_choose", (newListe: any) => {
-            console.log("listPlayerIdWhoChoose===========", listPlayerIdWhoChoose);
+            // console.log("listPlayerIdWhoChoose===========", listPlayerIdWhoChoose);
             setListPlayerIdWhoChoose(newListe);
         });
 
         socket.on("last_round_feedback", (feedback: unFeedBack[]) => {
-            console.log("Feedback dernier tour reçu :", feedback);
+            // console.log("Feedback dernier tour reçu :", feedback);
             setFeedBackLastRoundRaw(feedback);
         });
 
         // Recevoir les nouveaux messages
         socket.on("receive_message", (msg: any) => {
-            console.log("Nouveau message reçu :", msg);
+            // console.log("Nouveau message reçu :", msg);
             setMessages((prevMessages) => [...prevMessages, msg]);
             //setMessages([...messages, msg]);
         });
@@ -93,20 +107,25 @@ function Game() {
         // demander l'etat de la game
         socket.emit("get_dico_action");
         socket.on("dico_action", (data: any) => {
-            console.log("Dico des actions :", data);
+            // console.log("Dico des actions :", data);
             setDico_action(data);
         });
 
         socket.emit("get_game_state", gameId);
         socket.on("game_state", (data: any) => {
-            let { info_party_for_client, liste_joueur_for_client } = data;
-            console.log("Etat de la game :", info_party_for_client);
-            console.log("Liste des joueurs :", liste_joueur_for_client);
+            console.log("game_state reçu :", data);
+            let { info_party_for_client, liste_joueur_for_client, dico_action_joueur_client } = data;
+            // console.log("Etat de la game :", info_party_for_client);
+            // console.log("Liste des joueurs :", liste_joueur_for_client);
+            console.log("Dico des actions du joueur client :", dico_action_joueur_client);
             setInfo_party(info_party_for_client);
             setListeJoueur(liste_joueur_for_client);
+            if (dico_action_joueur_client) {
+                setDico_action(dico_action_joueur_client);
+            }
             if (info_party_for_client.etat_party === "ended") {
                 // INTERDICTION FORMEL DE FAIRE DES ALERT sa fige le code de tt les joueur 
-                console.log("La partie est terminé");
+                // console.log("La partie est terminé");
             }
             // si j'ai pas mon id dans la liste des joueur je retourne a l'accueil
             if (!liste_joueur_for_client[socket.id]) {
@@ -121,37 +140,38 @@ function Game() {
 
         socket.on("party_started", (data: any) => {
             let { info_party_for_client, liste_joueur_for_client } = data;
-            console.log("Etat de la game :", info_party_for_client);
-            console.log("Liste des joueurs :", liste_joueur_for_client);
+            // console.log("Etat de la game :", info_party_for_client);
+            // console.log("Liste des joueurs :", liste_joueur_for_client);
             setInfo_party(info_party_for_client);
             setListeJoueur(liste_joueur_for_client);
+            setDico_action({});
             setTimeBeforeNextParty(11);
             setIsValidAction(false);
         });
 
         socket.on("action_not_valid", () => {
-            console.log("L'action n'est pas valide");
+            // console.log("L'action n'est pas valide");
             setIsValidAction(false);
         });
 
         socket.on("tour_annuler", () => {
-            console.log("Le tour a été annulé");
+            // console.log("Le tour a été annulé");
             setIsValidAction(false);
         });
 
         socket.on("action_valid", () => {
-            console.log("L'action est valide");
+            // console.log("L'action est valide");
             setIsValidAction(true);
         });
 
         socket.on("you_win", () => {
-            console.log("Tu as gagné la partie");
+            // console.log("Tu as gagné la partie");
             setTimeBeforeNextParty(11);
             setIsValidAction(false);
         });
 
         socket.on("resolutionDuTour", (effect: any[]) => {
-            console.log("La résolution du tour est terminée");
+            // console.log("La résolution du tour est terminée");
             // effect = [[],[]]
             for (let Oneffect of effect) {
                 switch (Oneffect[0]) {
@@ -159,7 +179,7 @@ function Game() {
                     case "remove":
                     case "add":
                     default:
-                        console.log("Effet non géré :", Oneffect);
+                        // console.log("Effet non géré :", Oneffect);
                         break;
                 }
             }
@@ -198,18 +218,15 @@ function Game() {
     function setActionWithOutTarget(actionName: string) {
         setLstTargetSelect([]);
         setActionWithTargetSelect("")
-        console.log("normalement tu a clear la liste des cible");
+        // console.log("normalement tu a clear la liste des cible");
         sendMyAction(actionName, []);
     }
 
     function sendMyAction(actionName: string, target: string[]) {
-        console.log("Tu as choisi l'action :", actionName);
-        console.log("voici la liste des cible :", target);
-        if (target.length > 1) {
+        // console.log("Tu as choisi l'action :", actionName);
+        // console.log("voici la liste des cible :", target);
+        if (target.length >= 1) {
             socket.emit("thisIsMyAction", { action: actionName, target: target });// trouver un systeme car la cible et tous la triche etc...
-        }
-        else if (target.length === 1) {
-            socket.emit("thisIsMyAction", { action: actionName, target: [target[0]] });// trouver un systeme car la cible et tous la triche etc...
         }
         else if (target.length === 0) {
             socket.emit("thisIsMyAction", { action: actionName });// trouver un systeme car la cible et tous la triche etc...
@@ -223,12 +240,12 @@ function Game() {
         if (actionPossible[actionName].nb_cible.includes(lstTargetSelect.length)) {
             sendMyAction(actionName, lstTargetSelect);
         } else {
-            console.log("Tu dois sélectionner le bon nombre de cibles pour cette action");
+            // console.log("Tu dois sélectionner le bon nombre de cibles pour cette action");
         }
     }
 
     function addOrRemoveTarget(targetId: string) {
-        console.log("Tu as cliqué sur la cible :", targetId);
+        // console.log("Tu as cliqué sur la cible :", targetId);
         if (lstTargetSelect.includes(targetId)) {
             // si elle est deja dans la liste on l'enleve
             setLstTargetSelect(lstTargetSelect.filter(id => id !== targetId));
@@ -240,59 +257,90 @@ function Game() {
                 setLstTargetSelect([...lstTargetSelect, targetId]);
             }
             else {
-                console.log("Tu ne peux pas sélectionner plus de cibles pour cette action");
+                // console.log("Tu ne peux pas sélectionner plus de cibles pour cette action");
             }
         }
     }
 
-    console.log("actionWithTargetSelect", actionWithTargetSelect);
-    console.log("actionValider ?", isValidAction);
+    // console.log("actionWithTargetSelect", actionWithTargetSelect);
+    // console.log("actionValider ?", isValidAction);
 
     function buttonForAction(key: string) {
         // faut afficher differemment les action avec 0 cible et celles avec plus que 0 cible
-        //dico_action.[nom action].nb_cible
         if (actionPossible[key].nb_cible[0] === 0) {// pas de cible a choisir
             return (
                 // afficher le truc en griser si isValidAction est a true
-                <button key={key} disabled={isValidAction} onClick={() => { setActionWithOutTarget(key); }} className={`p-2 rounded border border-2 ${isValidAction ? "bg-gray-300 text-gray-500" : " bg-white text-black hover:border-blue-600 "} border-black`}>
-                    {key} - Coût: {actionPossible[key].cout}
-                </button>
+                <span key={key} className="rounded flex flex-col items-center justify-center relative">
+                    <button key={key} disabled={isValidAction} onClick={() => { setActionWithOutTarget(key); }} className={` rounded border border-2 ${isValidAction ? "bg-gray-300 text-gray-500" : " bg-white text-black hover:border-blue-600 "} border-black`}>
+                        {/* {key} - Coût: {actionPossible[key].cout} */}
+                        <div className={`action ${key}`}></div>
+                        <span className="absolute -top-1 -right-1 bg-yellow-400 text-black text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                            {actionPossible[key].cout}
+                        </span>
+                    </button>
+
+                </span>
             );
         } else if (actionPossible[key].nb_cible[0] > 0) { // il faut choisir au moin 1 cible
             return (
-                <span key={key} className=" rounded border border-2">
-                    <button key={key} disabled={isValidAction} onClick={() => { setActionWithTargetSelect(key) }} className={`w-full p-2 rounded border border-2 ${isValidAction ? "bg-gray-300 text-gray-500" : actionWithTargetSelect == key ? "bg-blue-500 text-black hover:border-blue-600" : " bg-white text-black hover:border-blue-600 "} border-black`}>
-                        {key} - Coût: {actionPossible[key].cout}
+                <span key={key} className="rounded flex flex-col items-center justify-center relative">
+                    <button key={key} disabled={isValidAction} onClick={() => { setActionWithTargetSelect(key) }} className={`rounded border border-2 ${isValidAction ? "bg-gray-300 text-gray-500" : actionWithTargetSelect == key ? "bg-blue-500 text-black hover:border-blue-600" : " bg-white text-black hover:border-blue-600 "} border-black`}>
+                        {/* {key} - Coût: {actionPossible[key].cout} */}
+                        <div className={`action ${key}`}></div>
+                        <span className="absolute -top-1 -right-1 bg-yellow-400 text-black text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                            {actionPossible[key].cout}
+                        </span>
                     </button>
                     {/* on doit pouvoir selectionner autant de cible que il y a de actionPossible[key].nb_cibl  */}
                     {actionWithTargetSelect == key && (
                         <span key={key + "1"}>
-                            <h3 className="text-xl font-bold">Sélectionnez vos cibles :</h3>
-                            <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto mb-2">
-                                {Object.keys(liste_joueur).filter((key) => key !== socket.id && liste_joueur[key].state == "player").map((key) => (
+                            <p className="text-center text-sm">Sélectionnez vos cibles :</p>
+                            <div className="flex flex-row flex-wrap justify-center gap-2">
+                                {/* {Object.keys(liste_joueur).filter((key) => key !== socket.id && liste_joueur[key].state == "player").map((key) => ( */}
+                                {Object.keys(liste_joueur)
+                                    .filter((key) => {
+                                        const action = actionPossible[actionWithTargetSelect];
+                                        const canTargetDead = action?.can_target_dead;
+                                        const canTargetSelf = action?.can_target_self; // si tu n'as pas ce champ, ajoute-le ou adapte
+                                        const player = liste_joueur[key];
 
-                                    <button
-                                        key={key}
-                                        disabled={isValidAction}
-                                        onClick={() => addOrRemoveTarget(key)}
-                                        className={`px-4 py-2 ${lstTargetSelect.includes(key) ? "bg-blue-500" : "bg-white"} text-black rounded border border-2 hover:border-blue-600 border-black w-auto`}
-                                    >
-                                        {liste_joueur[key].name}
-                                    </button>
+                                        const isSelf = key === socket.id;
 
-                                ))}
+                                        // règle self
+                                        if (isSelf && !canTargetSelf) return false;
+
+                                        // règles état cible
+                                        if (player.state === "dead" && !canTargetDead) return false;
+
+                                        return true;
+                                    })
+                                    .map((key) => (
+                                        < button
+                                            key={key}
+                                            disabled={isValidAction}
+                                            onClick={() => addOrRemoveTarget(key)}
+                                            className={`${lstTargetSelect.includes(key) ? "bg-blue-500" : "bg-white"} text-black rounded border border-2 hover:border-blue-600 border-black w-auto`}
+                                        >
+                                            {/*liste_joueur[key].name*/}
+                                            <div className={`personnage_taille_1 personnage_taille_1-${liste_joueur[key].sprite_joueur}`}></div>
+                                        </button>
+
+                                    ))}
                             </div>
                         </span>
-                    )}
+                    )
+                    }
 
-                    {actionPossible[key].nb_cible.includes(lstTargetSelect.length) && actionWithTargetSelect === key && (
-                        // a afficher que si l'action associer a se bouton ai ete cibler :/
-                        // un bouton pour valider l'action avec les cible selectionné
-                        <button onClick={() => { verifySendAction(key) }} className="p-2 bg-green-500 text-white rounded border border-2 hover:border-green-600 border-black m-1">
-                            Valider l'action avec les cibles sélectionnées
-                        </button>
-                    )}
-                </span>
+                    {
+                        actionPossible[key].nb_cible.includes(lstTargetSelect.length) && actionWithTargetSelect === key && (
+                            // a afficher que si l'action associer a se bouton ai ete cibler :/
+                            // un bouton pour valider l'action avec les cible selectionné
+                            <button onClick={() => { verifySendAction(key) }} className="bg-green-500 text-white rounded border border-2 hover:border-green-600 border-black ">
+                                Valider
+                            </button>
+                        )
+                    }
+                </span >
             );
         }
         else {
@@ -303,7 +351,59 @@ function Game() {
 
     }
 
+    /* function getPlayerPositions(containerId = "zoneSprites", nPlayers = 2) {
     
+        const container = document.getElementById(containerId)
+        if (!container) {
+            // console.error("Container not found");
+            return [];
+        }
+        const rect = container.getBoundingClientRect()
+    
+        const width = rect.width
+        const height = rect.height
+    
+        const centerX = width / 2
+        const centerY = height / 2
+    
+        const radius = Math.min(width, height) * 0.4
+    
+        const positions = []
+    
+        for (let i = 0; i < nPlayers; i++) {
+    
+            const angle = (2 * Math.PI * i) / nPlayers + Math.PI / 2
+    
+            const x = centerX + radius * Math.cos(angle)
+            const y = centerY + radius * Math.sin(angle)
+    
+            positions.push({ x, y })
+        }
+    
+        return positions
+    } */
+
+    function getPlayerPositions(containerId = "zoneSprites", playerIds: string[] = []) {
+        const container = document.getElementById(containerId)
+        if (!container) return [];
+
+        const rect = container.getBoundingClientRect()
+        const width = rect.width
+        const height = rect.height
+        const centerX = width / 2
+        const centerY = height / 2
+        const radius = Math.min(width, height) * 0.4
+
+        return playerIds.map((id, i) => {
+            const angle = (2 * Math.PI * i) / playerIds.length + Math.PI / 2
+            return {
+                x: centerX + radius * Math.cos(angle),
+                y: centerY + radius * Math.sin(angle),
+                id
+            }
+        });
+    }
+
 
     // si le socket marche pas encore ou met rien sur la page 
     if (!socket || !socket.id || !gameId) {
@@ -339,7 +439,7 @@ function Game() {
                                 let color = "text-gray-700";
                                 let add_str = "";
                                 let hasPlay = listPlayerIdWhoChoose.includes(key);
-                                console.log("hasPlay", hasPlay, "listPlayerIdWhoChoose", listPlayerIdWhoChoose, "key", key);
+                                // console.log("hasPlay", hasPlay, "listPlayerIdWhoChoose", listPlayerIdWhoChoose, "key", key);
 
                                 switch (joueur.state) {
                                     case "player":
@@ -388,6 +488,21 @@ function Game() {
                         <div className="p-4 bg-white shadow-inner rounded-t-lg border-t border-gray-300">
                             <h3 className="text-lg font-semibold text-center text-blue-700 mb-2">Votre état</h3>
                             <p className="text-center">Recharge : {liste_joueur[socket.id]?.recharge}</p>
+                            <div className="text-center">
+                                <p className="font-medium">Effets :</p>
+                                {liste_joueur[socket.id]?.effect?.length > 0 ? (
+                                    <ul className="text-sm list-disc list-inside">
+                                        {liste_joueur[socket.id].effect.map((effet, index) => (
+                                            <li key={index}>
+                                                {effet[0]} : {effet[1]}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p className="text-gray-500">Aucun effet actif</p>
+                                )}
+                            </div>
+
                         </div>
 
                         {/* Bouton quitter */}
@@ -408,7 +523,7 @@ function Game() {
                         <p>dont l'id est {socket.id}</p> */}
 
                         <div className="flex flex-col gap-4 w-full max-w-md text-center">
-                            <h2 className="text-2xl font-bold">Vous êtes {whichPartInTurn} de la game</h2>
+                            <h2 className="text-2xl font-bold">Vous êtes {whichPartInTurn} {whichPartInTurn == "dead" ? "💀" : ""} {whichPartInTurn == "winner" ? "🏆" : ""} de la game</h2>
                             <h2 className="text-3xl font-bold">dans la game ID: {gameId}</h2>
                             {/* compteur avant le debut de la prochiane game SI timeBeforeNextParty < 11 */}
                             {timeBeforeNextParty < 11 && (
@@ -497,12 +612,13 @@ function Game() {
                 setTimeBeforeNextParty(11);
             }
             // afficher les actionPossible et ton état (ton nombre de recharge , trouvable dans liste_joueur[socket.id].recharge)
-            if (actionPossible && Object.keys(actionPossible).length === 0) {
-                call_manualy_action_possible();
+            if (actionPossible && Object.keys(actionPossible).length === 0 && isValidAction == false) {//probleme
+                call_manualy_action_possible();//je doit diferencier vde car pas apeller ou "vide" car j'ai aucune action possible
             }
             return (
                 <div className="h-screen w-screen flex flex-row bg-blue-100">
 
+                    {/* ✅ Liste à gauche */}
                     <div className="w-64 h-screen bg-blue-200 flex flex-col border-r border-blue-300 shadow-md">
                         {/* Liste des joueurs scrollable */}
                         <div className="flex-1 overflow-y-auto p-4">
@@ -546,12 +662,18 @@ function Game() {
                                 return (
                                     <div
                                         key={key}
-                                        className={`p-2 my-1 rounded-lg shadow-sm ${hasPlay ? "bg-green-300" : "bg-white"}`}
+                                        // Ajout de "flex items-center gap-2" pour aligner horizontalement
+                                        className={`p-2 my-1 rounded-lg shadow-sm flex items-center gap-2 ${hasPlay ? "bg-green-300" : "bg-white"}`}
                                     >
-                                        <p className={`font-medium ${color}`}>
-                                            {joueur.name} {isSelf && <span className=" ng-blue-300 text-sm text-blue-700">(vous)</span>} {add_str}
-                                        </p>
-                                        <p className="text-xs text-gray-500 italic">État : {joueur.state}</p>
+                                        <div className="flex-1">
+                                            <p className={`font-medium ${color}`}>
+                                                {joueur.name} {isSelf && <span className="text-blue-700 text-sm">(vous)</span>} {add_str}
+                                            </p>
+                                            <p className="text-xs text-gray-500 italic">État : {joueur.state}</p>
+                                        </div>
+
+                                        {/* Le sprite est maintenant à côté grâce au flex du parent */}
+                                        <span className={`personnage_taille_1 personnage_taille_1-${joueur.sprite_joueur}`}></span>
                                     </div>
                                 );
                             })}
@@ -561,6 +683,20 @@ function Game() {
                         <div className="p-4 bg-white shadow-inner rounded-t-lg border-t border-gray-300">
                             <h3 className="text-lg font-semibold text-center text-blue-700 mb-2">Votre état</h3>
                             <p className="text-center">Recharge : {liste_joueur[socket.id]?.recharge}</p>
+                            <div className="text-center">
+                                <p className="font-medium">Effets :</p>
+                                {liste_joueur[socket.id]?.effect?.length > 0 ? (
+                                    <ul className="text-sm list-disc list-inside">
+                                        {liste_joueur[socket.id].effect.map((effet, index) => (
+                                            <li key={index}>
+                                                {effet[0]} : {effet[1]}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p className="text-gray-500">Aucun effet actif</p>
+                                )}
+                            </div>
                         </div>
 
                         {/* Bouton quitter */}
@@ -571,29 +707,57 @@ function Game() {
                             >
                                 Quitter la game
                             </button>
+                            <p className="text-xs text-gray-500 mt-2">ver : 1.0.0 alpha</p>
                         </div>
                     </div>
 
 
                     {/* ✅ Zone principale */}
-                    <div className="flex-1 flex flex-col items-center justify-center">
-                        {/* <p>Je suis le joueur : {liste_joueur[socket.id]?.name}</p>
-                        <p>dont l'id est {socket.id}</p> */}
+                    <div className="flex-1 flex flex-col items-center bg-red-100">
 
-                        <div className="flex flex-col gap-4 w-full max-w-md text-center">
-                            <h2 className="text-2xl font-bold">Actions possibles :</h2>
-                            {Object.keys(actionPossible).map((key) => buttonForAction(key))}
-
-                            {/* <h2 className="text-2xl font-bold">Votre état :</h2>
-                            <p>Recharge: {liste_joueur[socket.id]?.recharge}</p> */}
+                        <div className="flex-1 w-[95%] bg-blue-200 m-4 rounded flex flex-wrap justify-center items-center gap-8 p-4">
+                            {Object.keys(liste_joueur)
+                                .filter(id => liste_joueur[id].state === "player" || liste_joueur[id].state === "dead")
+                                .map((id) => (
+                                    <div key={id} className="flex flex-col items-center">
+                                        {/* badge action au dessus */}
+                                        {dico_action[id] && (
+                                            <div style={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                                gap: "2px",
+                                                backgroundColor: "rgba(0,0,0,0.5)",
+                                                borderRadius: "4px",
+                                                padding: "1px 3px"
+                                            }}>
+                                                {dico_action[id]?.action && (
+                                                    <div className={`action ${dico_action[id].action}`}></div>
+                                                )}
+                                                {dico_action[id]?.target?.map((targetId: string, i: number) => (
+                                                    <span key={i} style={{ display: "flex", alignItems: "center", gap: "2px" }}>
+                                                        <span style={{ color: "white", fontSize: "10px" }}>=&gt;</span>
+                                                        <div className={`personnage_taille_1 personnage_taille_1-${liste_joueur[targetId]?.sprite_joueur || 0}`}></div>
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
+                                        {/* sprite */}
+                                        <div className={`personnage personnage-${liste_joueur[id]?.sprite_joueur || 0}`}></div>
+                                        {/* nom */}
+                                        {/* <p className="text-sm font-medium mt-1">{liste_joueur[id]?.name} {id == socket.id ? "(vous)" : ""}</p> */}
+                                        <p className={`text-sm font-medium mt-1 ${liste_joueur[id]?.state === "dead" ? "text-red-500" : ""}`}>
+                                            {liste_joueur[id]?.name} {id == socket.id ? "(vous)" : ""}
+                                        </p>
+                                    </div>
+                                ))}
                         </div>
 
-                        {/* <button
-                            className="mt-4 p-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
-                            onClick={() => quit_the_game()}
-                        >
-                            Quitter la game
-                        </button> */}
+                        {/* actions en bas */}
+                        <h2 className="text-2xl font-bold">Actions possibles :</h2>
+                        <div className="flex flex-row flex-wrap justify-center gap-2 bg-green-100 mb-2">
+                            {Object.keys(actionPossible).map((key) => buttonForAction(key))}
+                        </div>
+
                     </div>
 
                     {/* ✅ Panneau de chat à droite */}
@@ -677,6 +841,7 @@ function Game() {
                     <button className="mt-4 p-2 bg-red-500 text-white rounded" onClick={() => quit_the_game()}>
                         Quitter la game
                     </button>
+
                 </>
             )
             break;

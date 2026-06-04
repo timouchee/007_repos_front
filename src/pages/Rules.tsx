@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import '../assets/actions/spritesheet.css'
 
 
 function Rules() {
@@ -34,6 +35,7 @@ function Rules() {
               <th className="border border-gray-300 p-3">Nombre de cible</th>
               <th className="border border-gray-300 p-3">Coût</th>
               <th className="border border-gray-300 p-3">Effet</th>
+              <th className="border border-gray-300 p-3">Image</th>
             </tr>
           </thead>
           <tbody>
@@ -43,6 +45,43 @@ function Rules() {
               <td className="border border-gray-300 p-3">toi-même</td>
               <td className="border border-gray-300 p-3">0</td>
               <td className="border border-gray-300 p-3">Gagne 1 munition</td>
+              <td className="action recharge"></td>
+            </tr>
+
+            {/* holy_recharge */}
+            <tr className="hover:bg-blue-50">
+              <td className="border border-gray-300 p-3 font-semibold">holy_recharge</td>
+              <td className="border border-gray-300 p-3">toi-même</td>
+              <td className="border border-gray-300 p-3">0</td>
+              <td className="border border-gray-300 p-3">Gagne 2 munition (cooldown: 1 tours)</td>
+              <td className="action holy_recharge"></td>
+            </tr>
+
+            {/* cure */}
+            <tr className="hover:bg-blue-50">
+              <td className="border border-gray-300 p-3 font-semibold">cure</td>
+              <td className="border border-gray-300 p-3">toi-même</td>
+              <td className="border border-gray-300 p-3">0</td>
+              <td className="border border-gray-300 p-3">enlève l'effet de poison</td>
+              <td className="action cure"></td>
+            </tr>
+
+            {/* ressurect */}
+            <tr className="hover:bg-blue-50">
+              <td className="border border-gray-300 p-3 font-semibold">ressurect</td>
+              <td className="border border-gray-300 p-3">un joueur mort & toi même</td>
+              <td className="border border-gray-300 p-3">5</td>
+              <td className="border border-gray-300 p-3">ressurect un joueur mort</td>
+              <td className="action ressurect"></td>
+            </tr>
+
+            {/* rancune */}
+            <tr className="hover:bg-blue-50">
+              <td className="border border-gray-300 p-3 font-semibold">rancune</td>
+              <td className="border border-gray-300 p-3">toi même</td>
+              <td className="border border-gray-300 p-3">3</td>
+              <td className="border border-gray-300 p-3">te permet de ressuciter 3 tour apres ta mort</td>
+              <td className="action rancune"></td>
             </tr>
 
             {/* pistolet */}
@@ -51,6 +90,7 @@ function Rules() {
               <td className="border border-gray-300 p-3">1</td>
               <td className="border border-gray-300 p-3">1</td>
               <td className="border border-gray-300 p-3">Attaque un joueur avec une balle</td>
+              <td className="action pistolet"></td>
             </tr>
 
             {/* double_pistolet */}
@@ -59,6 +99,7 @@ function Rules() {
               <td className="border border-gray-300 p-3">1 ou 2</td>
               <td className="border border-gray-300 p-3">2</td>
               <td className="border border-gray-300 p-3">Tire sur deux cibles différentes</td>
+              <td className="action double_pistolet"></td>
             </tr>
             <tr className="hover:bg-blue-50 text-gray-400 italic">
               <td className="border border-gray-300 p-3 font-semibold">double_pistolet_1</td>
@@ -79,6 +120,7 @@ function Rules() {
               <td className="border border-gray-300 p-3">1</td>
               <td className="border border-gray-300 p-3">3</td>
               <td className="border border-gray-300 p-3">Attaque puissante qui traverse le bouclier</td>
+              <td className="action bazooka"></td>
             </tr>
 
             {/* lame */}
@@ -87,6 +129,7 @@ function Rules() {
               <td className="border border-gray-300 p-3">1</td>
               <td className="border border-gray-300 p-3">3</td>
               <td className="border border-gray-300 p-3">Attaque de mêlée qui perce les défenses faibles</td>
+              <td className="action lame"></td>
             </tr>
 
             {/* pisto_lame */}
@@ -95,6 +138,7 @@ function Rules() {
               <td className="border border-gray-300 p-3">1 ou 2</td>
               <td className="border border-gray-300 p-3">4</td>
               <td className="border border-gray-300 p-3">Attaque combinée distance et mêlée</td>
+              <td className="action pisto_lame"></td>
             </tr>
             <tr className="hover:bg-blue-50 text-gray-400 italic">
               <td className="border border-gray-300 p-3 font-semibold">pisto_lame_1</td>
@@ -109,12 +153,31 @@ function Rules() {
               <td className="border border-gray-300 p-3">Variante serveur (attaque lourde)</td>
             </tr>
 
+            {/* pisto_poison */}
+            <tr className="hover:bg-blue-50">
+              <td className="border border-gray-300 p-3 font-semibold">pisto_poison</td>
+              <td className="border border-gray-300 p-3">1</td>
+              <td className="border border-gray-300 p-3">3</td>
+              <td className="border border-gray-300 p-3">au bout de 3 tour si le joueur ne c'est pas cure il prendra 1 de degat</td>
+              <td className="action pisto_poison"></td>
+            </tr>
+
+            {/* dague */}
+            <tr className="hover:bg-blue-50">
+              <td className="border border-gray-300 p-3 font-semibold">dague</td>
+              <td className="border border-gray-300 p-3">1</td>
+              <td className="border border-gray-300 p-3">1</td>
+              <td className="border border-gray-300 p-3">Ne provoque pas de clash lorsque vous visez quelqu'un vous attaquant</td>
+              <td className="action dague"></td>
+            </tr>
+
             {/* arrache */}
             <tr className="hover:bg-blue-50">
               <td className="border border-gray-300 p-3 font-semibold">arrache</td>
               <td className="border border-gray-300 p-3">1</td>
               <td className="border border-gray-300 p-3">5</td>
               <td className="border border-gray-300 p-3">Annule l'action de la cible et l'empeche de refaire cette même action de la game</td>
+              <td className="action arrache"></td>
             </tr>
           </tbody>
         </table>
@@ -129,6 +192,7 @@ function Rules() {
               <th className="border border-gray-300 p-3">Battu par</th>
               <th className="border border-gray-300 p-3">Annule</th>
               <th className="border border-gray-300 p-3">cooldown</th>
+              <th className="border border-gray-300 p-3">Image</th>
             </tr>
           </thead>
           <tbody>
@@ -141,6 +205,7 @@ function Rules() {
               <td className="border border-gray-300 p-3">bazooka, pisto_lame_2</td>
               <td className="border border-gray-300 p-3">—</td>
               <td className="border border-gray-300 p-3">—</td>
+              <td className="action bouclier"></td>
             </tr>
 
             {/* miroire */}
@@ -152,6 +217,7 @@ function Rules() {
               <td className="border border-gray-300 p-3">lame</td>
               <td className="border border-gray-300 p-3">pisto_lame_2, double_pistolet_2</td>
               <td className="border border-gray-300 p-3">1 tour</td>
+              <td className="action miroire"></td>
             </tr>
 
           </tbody>

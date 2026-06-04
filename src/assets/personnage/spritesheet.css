@@ -1,0 +1,38 @@
+
+.personnage_taille_1 {
+    display: inline-block;
+    background: url('spritesheet.png') no-repeat;
+    /* Taille TOTALE de la spritesheet × ratio (32/319 = 0.1003) */
+    background-size: 128px 62px;  /* 1276*0.1003 × 616*0.1003 */
+    width: 32px; 
+    height: 31px;
+}
+
+.personnage_taille_1-0 { background-position: 0px 0px; }
+.personnage_taille_1-1 { background-position: -32px 0px; }   /* -319 * 0.1003 */
+.personnage_taille_1-2 { background-position: -64px 0px; }
+.personnage_taille_1-3 { background-position: -96px 0px; }
+.personnage_taille_1-4 { background-position: 0px -31px; }   /* -308 * 0.1003 */
+.personnage_taille_1-5 { background-position: -32px -31px; }
+.personnage_taille_1-6 { background-position: -64px -31px; }
+.personnage_taille_1-7 { background-position: -96px -31px; }
+
+
+.personnage {
+    display: inline-block;
+    background: url('spritesheet.png') no-repeat;
+    /* Taille TOTALE de la spritesheet × ratio (32/319 = 0.1003) */
+    background-size: 256px 124px; /* 128*2 × 62*2 */
+    width: 64px;
+    height: 62px;
+}
+
+.personnage-0 { background-position: 0px 0px; }
+.personnage-1 { background-position: -64px 0px; }
+.personnage-2 { background-position: -128px 0px; }
+.personnage-3 { background-position: -192px 0px; }
+.personnage-4 { background-position: 0px -62px; }
+.personnage-5 { background-position: -64px -62px; }
+.personnage-6 { background-position: -128px -62px; }
+.personnage-7 { background-position: -192px -62px; }
+

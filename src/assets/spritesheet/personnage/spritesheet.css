@@ -1,0 +1,55 @@
+/* .sprite {
+  display: inline-block;
+  background: url('spritesheet.png') no-repeat;
+  width: 460px;
+  height: 443px;
+}
+.sprite-0 { background-position: -0px -0px; }
+.sprite-1 { background-position: -460px -0px; } */
+
+
+
+
+
+/* Vos classes qui marchent avec la nouvelle image */
+.sprite {
+    display: inline-block;
+    background: url('spritesheet.png') no-repeat;
+    width: 460px;
+    height: 443px;
+}
+.sprite-0 { background-position: 0 0; }
+.sprite-1 { background-position: -460px 0; }
+
+/* Réduction de la taille - calculé pour 128px de large */
+.sprite-wrapper {
+    width: 32px;
+    height: 31px;  /* 128 * (443/460) = 123.2 */
+    overflow: hidden;
+    border: 2px solid yellow;
+}
+
+.sprite-wrapper .sprite {
+    transform: scale(0.07);  /* 128 / 460 = 0.2783 */
+    transform-origin: top left;
+}
+
+/* Grid 2x2 */
+.grid2x2 {
+    display: grid;
+    grid-template-columns: repeat(4, auto);
+    grid-template-rows: repeat(3, auto);
+    gap: 2px;  /* Espace entre les sprites */
+    border: 3px solid red;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.grid2x2 > * {
+    border: 1px solid blue;
+}
+
+
+
+
+
+
