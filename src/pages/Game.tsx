@@ -708,6 +708,7 @@ function Game() {
                                 Quitter la game
                             </button>
                             <p className="text-xs text-gray-500 mt-2">ver : 1.0.0 alpha</p>
+                            <p className="text-xs text-gray-500 mt-2">timeo971@gmail.com</p>
                         </div>
                     </div>
 
